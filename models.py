@@ -1,7 +1,7 @@
-# bultin library
+#bultin library
 import os
 
-# external libraries
+#external libraries
 import pony.orm as pony
 import json
 
@@ -14,14 +14,12 @@ database = pony.Database(
     create_db=True
 )
 
-
 class User(database.Entity):
 
     name = pony.Required(str, unique=True)
     password = pony.Required(str)
 
     def __repr__(self):
-        # return 'User(name={}, password={})'.format...
         return json.dumps(
             {
                 "name": self.name,
