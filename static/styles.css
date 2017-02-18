@@ -23,6 +23,7 @@ label {
 
 /* Campos del formulario */
 
+input[type="email"],
 input[type="text"],
 input[type="password"] {
    border: none;

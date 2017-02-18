@@ -1,36 +1,43 @@
 # bultin library
-
+from pprint import pprint
 # external libraries
 from pony.orm import select
 import pony.orm as pony
 from models import User
-from pprint import pprint
-import hashlib
+from passlib.hash import pbkdf2_sha256
 
 
-SALT = 'aslkdfjlaskdjflkhlñwerhl1234khl2kjrlkjlkejrlkwjer'
+SALT = "aslkdfjl@@#&/askdjf@@%#$(()(/l2kjrlkjlkejrlkwjer"
 
 
 def hash_password(password):
-    return hashlib.md5((SALT + password).encode('utf-8')).hexdigest()
+    return pbkdf2_sha256.hash(password + SALT)
 
 
 @pony.db_session
-def add_user(name, password):
-    new_user = User(
-        name=name,
-        password=hash_password(password),
-    )
-    return new_user
+def add_user(email, name, password):
+    if name != "" and password != "":
+        new_user = User(
+            email=email,
+            name=name,
+            password=hash_password(password),
+        )
+        return new_user
+    else:
+        return False
 
 
 @pony.db_session
-def find_user(name, password):
-    user = select(
+def find_user(password, email_or_name):
+    user = pony.select(
         u for u in User
-        if u.name == name and u.password == hash_password(password)
+        if u.name == email_or_name
+        or u.email == email_or_name
     ).first()
-    pprint(user)
-    return user
-
-# encoding alternativo
+    if not user:
+        return False
+    if pbkdf2_sha256.verify(
+        password+SALT,
+        user.password,
+    ):
+        return user

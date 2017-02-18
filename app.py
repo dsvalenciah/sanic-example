@@ -3,17 +3,17 @@ import pprint
 
 # external libraries
 from sanic import Sanic
-from sanic.response import html
+from sanic.response import html, redirect
 from jinja2 import Environment, PackageLoader
 import CRUD
 
 env = Environment(
-    loader=PackageLoader('app', 'templates'),
+    loader=PackageLoader("app", "templates"),
 )
 
 app = Sanic(__name__)
 
-app.static('/static', './static')
+app.static("/static", "./static")
 
 
 @app.route("/")
@@ -23,39 +23,39 @@ async def home(request):
     return html(html_content)
 
 
-@app.route("/sign_up", methods=['GET', 'POST'])
+@app.route("/sign_up", methods=["GET", "POST"])
 async def sign_up(request):
-    if request.method == 'GET':
+    if request.method == "GET":
         template = env.get_template("sign_up.html")
         html_content = template.render()
         return html(html_content)
-    elif request.method == 'POST':
-        pprint.pprint(request.form)
+    elif request.method == "POST":
         CRUD.add_user(
-            name=request.form["user"][0],
-            password=request.form["password"][0],
+            email=request.form.get("email", ""),
+            name=request.form.get("user", ""),
+            password=request.form.get("password", ""),
         )
-        template = env.get_template("home.html")
+        url = app.url_for("home")
+        return redirect(url)
+
+
+@app.route("/login", methods=["GET", "POST"])
+async def login(request):
+    if request.method == "GET":
+        template = env.get_template("login.html")
         html_content = template.render()
         return html(html_content)
-
-
-@app.route("/login")
-async def login(request):
-    template = env.get_template("login.html")
-    html_content = template.render()
-    return html(html_content)
-
-
-@app.route("/profile", methods=["POST"])
-async def profile(request):
-    if CRUD.find_user(
-        name=request.form["user"][0],
-        password=request.form["password"][0],
-    ):
-        return html("<html><body>:)</body></html>")
-    else:
-        return html("<html><body>:(</body></html>")
+    elif request.method == "POST":
+        user = CRUD.find_user(
+            email_or_name=request.form.get("email_or_name", ""),
+            password=request.form.get("password", ""),
+        )
+        if user:
+            template = env.get_template("profile.html")
+            html_content = template.render(name=user.name)
+            return html(html_content)
+        else:
+            return html("<html><body>:(</body></html>")
 
 
 if __name__ == "__main__":
