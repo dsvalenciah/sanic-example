@@ -1,6 +1,6 @@
 # external libraries
 from sanic import Sanic
-from sanic.response import html, redirect
+from sanic.response import html, redirect, text
 from jinja2 import Environment, PackageLoader
 import CRUD
 
@@ -43,16 +43,26 @@ async def login(request):
         html_content = template.render()
         return html(html_content)
     elif request.method == "POST":
-        user = CRUD.find_user(
+        session = CRUD.login_user(
             email_or_name=request.form.get("email_or_name", ""),
             password=request.form.get("password", ""),
         )
-        if user:
-            template = env.get_template("profile.html")
-            html_content = template.render(name=user.name)
-            return html(html_content)
+        if session:
+            response = redirect(app.url_for('profile'))
+            response.cookies['Token'] = session.token
+            return response
         else:
             return html("<html><body>:(</body></html>")
+
+
+@app.route("/profile")
+async def profile(request):
+    token = request.cookies.get('Token', '')
+    print(token)
+    session, user = CRUD.get_session_by_token(token)
+    if session:
+        return text(f'{user.name} :)')
+    return text(':(')
 
 
 if __name__ == "__main__":
