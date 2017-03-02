@@ -50,19 +50,9 @@ def find_user(password, email_or_name):
 
 @pony.db_session
 def login_user(password, email_or_name):
-    user = pony.select(
-        u for u in User
-        if u.name == email_or_name
-        or u.email == email_or_name
-    ).first()
+    user = find_user(password, email_or_name)
 
     if not user:
-        return None
-
-    if not pbkdf2_sha256.verify(
-        password+SALT,
-        user.password,
-    ):
         return None
 
     session = Session(user=user, token=str(uuid4()))
