@@ -1,6 +1,6 @@
 # bultin library
 from uuid import uuid4
-
+import re
 
 # external libraries
 from pony.converting import str2datetime  # noqa
@@ -16,9 +16,25 @@ def hash_password(password):
     return pbkdf2_sha256.hash(password + SALT)
 
 
+def check_format(regex, string):
+    if string:
+        match = re.match(regex, string)
+        if match:
+            return match.group(0)
+    return ""
+
+
+def valid_data(name, email):
+    name = check_format(r"^(\w{4,15})$", name.strip())
+    email = check_format(r"^(?P<user>[A-Za-z](\.?[\w\-]+))+@(?P<domain>[A-Za-z0-9](\.?[A-Za-z0-9\-]+)+\.[A-Za-z]{2,})$",
+        email.strip())
+    return name, email
+
+
 @pony.db_session
 def add_user(email, name, password):
-    if name != "" and password != "":
+    name, email = valid_data(name, email)
+    if name != "" and password != "" and email:
         new_user = User(
             email=email,
             name=name,
