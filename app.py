@@ -1,3 +1,6 @@
+# bultin library
+import datetime
+
 # external libraries
 from sanic import Sanic
 from sanic.response import html, redirect, text
@@ -46,11 +49,14 @@ async def login(request):
         session = CRUD.login_user(
             email_or_name=request.form.get("email_or_name", ""),
             password=request.form.get("password", ""),
+            expires=datetime.datetime.now() + datetime.timedelta(seconds=5)
         )
         if session:
             response = redirect(app.url_for('home'))
             response.cookies['Token'] = session.token
-            print(f'Aquí está!! ---------------------------{response.cookies}')
+            response.cookies['Token']['max-age'] = (
+                session.expires - datetime.datetime.now()
+            ).total_seconds()
             return response
         else:
             return text(':(')
@@ -58,12 +64,13 @@ async def login(request):
 
 @app.route("/home")
 async def home(request):
-    token = request.cookies.get('Token', '')
-    print('hola hola!!!!!!!!!!!!!!!')
-    session, user = CRUD.get_session_by_token(token)
-    print(session)
-    if session:
-        return text(f'{user.name} :)')
+    token = request.cookies.get('Token', None)
+    if token:
+        session, user = CRUD.get_session_by_token(token)
+        if session:
+            return text(f'{user.name} :)')
+        else:
+            return text(':(')
     return text(':(')
 
 

@@ -1,11 +1,9 @@
 # bultin library
-from datetime import datetime
 from uuid import uuid4
 
 
 # external libraries
-from pony.converting import str2datetime    #noqa
-from pony.orm import select
+from pony.converting import str2datetime  # noqa
 import pony.orm as pony
 from models import User, Session
 from passlib.hash import pbkdf2_sha256
@@ -35,26 +33,25 @@ def add_user(email, name, password):
 def find_user(password, email_or_name):
     user = pony.select(
         u for u in User
-        if u.name == email_or_name
-        or u.email == email_or_name
+        if u.name == email_or_name or u.email == email_or_name
     ).first()
     if not user:
         return None
     if pbkdf2_sha256.verify(
-        password+SALT,
+        password + SALT,
         user.password,
     ):
         return user
 
 
 @pony.db_session
-def login_user(password, email_or_name):
+def login_user(password, email_or_name, expires):
     user = find_user(password, email_or_name)
 
     if not user:
         return None
 
-    session = Session(user=user, token=str(uuid4()))
+    session = Session(user=user, token=str(uuid4()), expires=expires)
     return session
 
 

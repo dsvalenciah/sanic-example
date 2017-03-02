@@ -3,16 +3,12 @@ import datetime
 import os
 
 # external libraries
-from pony.converting import str2datetime    #noqa=No Quality Assurance
 import pony.orm as pony
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 PONY_DATABASE_URI = os.path.join(basedir, 'pony.db')
 
-
-def default_expires():
-    return datetime.datetime.now() + datetime.timedelta(seconds=60)
 
 database = pony.Database(
     "sqlite",
@@ -31,10 +27,7 @@ class User(database.Entity):
 class Session(database.Entity):
     user = pony.Required(User)
     token = pony.Required(str, unique=True)
-    expires = pony.Required(
-        datetime.datetime,
-        default=default_expires
-    )
+    expires = pony.Required(datetime.datetime)
 
 
 pony.sql_debug(True)
