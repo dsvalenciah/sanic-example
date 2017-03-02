@@ -14,8 +14,8 @@ app.static("/static", "./static")
 
 
 @app.route("/")
-async def home(request):
-    template = env.get_template("home.html")
+async def start(request):
+    template = env.get_template("start.html")
     html_content = template.render()
     return html(html_content)
 
@@ -32,7 +32,7 @@ async def sign_up(request):
             name=request.form.get("user", ""),
             password=request.form.get("password", ""),
         )
-        url = app.url_for("home")
+        url = app.url_for("start")
         return redirect(url)
 
 
@@ -48,15 +48,15 @@ async def login(request):
             password=request.form.get("password", ""),
         )
         if session:
-            response = redirect(app.url_for('profile'))
+            response = redirect(app.url_for('home'))
             response.cookies['Token'] = session.token
             return response
         else:
             return html("<html><body>:(</body></html>")
 
 
-@app.route("/profile")
-async def profile(request):
+@app.route("/home")
+async def home(request):
     token = request.cookies.get('Token', '')
     print(token)
     session, user = CRUD.get_session_by_token(token)
