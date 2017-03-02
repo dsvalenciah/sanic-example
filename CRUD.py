@@ -1,6 +1,5 @@
 # bultin library
 from datetime import datetime
-from pprint import pprint
 from uuid import uuid4
 
 
@@ -61,9 +60,10 @@ def login_user(password, email_or_name):
 
 @pony.db_session
 def get_session_by_token(token):
-    session, user = pony.select(
-        (s, s.user) for s in Session
-        if s.token == token and s.user.name
+    session, user_id = pony.select(
+        (s, s.user.id) for s in Session
+        if s.token == token
     ).first()
-    print(user.name)
-    return session, user
+    if not session:
+        return None
+    return session, User[user_id]

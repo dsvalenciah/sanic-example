@@ -50,16 +50,18 @@ async def login(request):
         if session:
             response = redirect(app.url_for('home'))
             response.cookies['Token'] = session.token
+            print(f'Aquí está!! ---------------------------{response.cookies}')
             return response
         else:
-            return html("<html><body>:(</body></html>")
+            return text(':(')
 
 
 @app.route("/home")
 async def home(request):
     token = request.cookies.get('Token', '')
-    print(token)
+    print('hola hola!!!!!!!!!!!!!!!')
     session, user = CRUD.get_session_by_token(token)
+    print(session)
     if session:
         return text(f'{user.name} :)')
     return text(':(')
