@@ -30,12 +30,12 @@ async def sign_up(request):
         html_content = template.render()
         return html(html_content)
     elif request.method == "POST":
-        CRUD.add_user(
+        success = CRUD.add_user(
             email=request.form.get("email", ""),
             name=request.form.get("user", ""),
             password=request.form.get("password", ""),
         )
-        url = app.url_for("start")
+        url = app.url_for("welcome") if success else app.url_for("start")
         return redirect(url)
 
 
@@ -72,6 +72,11 @@ async def home(request):
         else:
             return text(':(')
     return text(':(')
+
+
+@app.route("/welcome")
+async def welcome(request):
+    return text('registrado!')
 
 
 if __name__ == "__main__":
