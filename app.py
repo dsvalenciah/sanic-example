@@ -22,23 +22,24 @@ async def start(request):
     html_content = template.render()
     return html(html_content)
 
-
 @app.route("/sign_up", methods=["GET", "POST"])
-async def sign_up(request):
+async def sign_up(request, invalid=False):
     if request.method == "GET":
+        print("SOCHE PEDAZO DE MIERDA")
         template = env.get_template("sign_up.html")
-        html_content = template.render()
+        html_content = template.render(invalid=invalid)
         return html(html_content)
     elif request.method == "POST":
-        success = CRUD.add_user(
+        print("SOCHE PEDAZO DE ESCROTO")
+        user = CRUD.add_user(
             email=request.form.get("email", ""),
             name=request.form.get("user", ""),
             password=request.form.get("password", ""),
         )
-        url = app.url_for("welcome") if success else app.url_for("start")
+        url = app.url_for("start") if user else app.url_for("sign_up", invalid=True)
         return redirect(url)
 
-
+|
 @app.route("/login", methods=["GET", "POST"])
 async def login(request):
     if request.method == "GET":
@@ -49,7 +50,7 @@ async def login(request):
         session = CRUD.login_user(
             email_or_name=request.form.get("email_or_name", ""),
             password=request.form.get("password", ""),
-            expires=datetime.datetime.now() + datetime.timedelta(seconds=5)
+            expires=datetime.datetime.now() + datetime.timedelta(seconds=10)
         )
         if session:
             response = redirect(app.url_for('home'))
@@ -72,11 +73,6 @@ async def home(request):
         else:
             return text(':(')
     return text(':(')
-
-
-@app.route("/welcome")
-async def welcome(request):
-    return text('registrado!')
 
 
 if __name__ == "__main__":
